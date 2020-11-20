@@ -131,12 +131,17 @@ if __name__ == "__main__" :
 #     { action : Opposite, area : immigrant area, regi : Jisu Choi \n Unknown}
 
     file_path = './record.avi'
-    video = cv2.VideoCapture(file_path)
-    video.set(1, 500)
+    myWindow.video = cv2.VideoCapture(file_path)
+    myWindow.video.set(1, 500)
     dic = {'action' : ['Dash', 'Opposite'], 'area' : 'immigrant area', 'regi' : ['Jisu Choi', 'Minho Chung']}
 
     def displayFrame():
-        ret, frame = video.read()
+
+        ret, frame = myWindow.video.read()
+        if ret == False:
+            myWindow.video = cv2.VideoCapture(file_path)
+            myWindow.video.set(1, 500)
+            ret, frame = myWindow.video.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = qimage2ndarray.array2qimage(frame)
 
@@ -162,6 +167,8 @@ if __name__ == "__main__" :
 
         time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         myWindow.info_setup(myWindow.table_info_time, time)
+
+
 
 
 #####################################################################################################

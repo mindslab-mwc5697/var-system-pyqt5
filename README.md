@@ -1,4 +1,5 @@
 # var-system-pyqt5
+Python 3.7.4 (Error on Python 3.8)
 
 airport_control_system_ui.py
 - contains all functions and connections to UI

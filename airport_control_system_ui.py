@@ -55,18 +55,24 @@ class WindowClass(QMainWindow, form_class) :
     # action setup
     # Input : action(ex. Dash)
     #         action_check(ex. self.table_action_check1)
-    def action_setup(self, action, action_check, enable):
+    def action_setup(self, action, enable):
         action_font = QFont('Noto Sans CJK KR', 19, QFont.Bold)
         item = self.cell_setup(action_font, enable)
         item.setText('●')
         item.setTextAlignment(Qt.AlignTop)
         item.setTextAlignment(Qt.AlignHCenter)
-        if action == 'Dash' or action == 'Two':
-            action_check.setItem(0, 0, item)
-        elif action == 'Opposite' or action == 'Abandon':
-            action_check.setItem(0, 1, item)
-        else:
-            action_check.setItem(0, 2, item)
+        if action == 'Dash':
+            self.table_action_check1.setItem(0, 0, item)
+        elif action == 'Two':
+            self.table_action_check2.setItem(0, 0, item)
+        elif action == 'Opposite':
+            self.table_action_check1.setItem(0, 1, item)
+        elif action == 'Abandon':
+            self.table_action_check2.setItem(0, 1, item)
+        elif action == 'Faint':
+            self.table_action_check1.setItem(0, 2, item)
+        elif action == 'Assault':
+            self.table_action_check2.setItem(0, 2, item)
 
     # information setup
     # Input : category(ex. self.table_info_time)
@@ -79,12 +85,12 @@ class WindowClass(QMainWindow, form_class) :
 
     # reset all cells
     def reset_cells(self):
-        self.action_setup('Dash', self.table_action_check1, False)
-        self.action_setup('Opposite', self.table_action_check1, False)
-        self.action_setup('Faint', self.table_action_check1, False)
-        self.action_setup('Two', self.table_action_check2, False)
-        self.action_setup('Abandon', self.table_action_check2, False)
-        self.action_setup('Assault', self.table_action_check2, False)
+        self.action_setup('Dash', False)
+        self.action_setup('Opposite', False)
+        self.action_setup('Faint', False)
+        self.action_setup('Two', False)
+        self.action_setup('Abandon', False)
+        self.action_setup('Assault', False)
 
 
         self.table_info_time.setItem(0, 1, QTableWidgetItem())
@@ -114,19 +120,6 @@ class WindowClass(QMainWindow, form_class) :
         view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-    # def displayFrame(self, frame):
-    #
-    #     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #     image = qimage2ndarray.array2qimage(frame)
-    #     self.scene_setup(myWindow.view_ch1, image)
-    #     self.reset_cells()
-    #     time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    #     self.action_setup('Opposite', self.table_action_check1, True)
-    #     self.info_setup(self.table_info_time, time)
-    #     self.info_setup(self.table_info_area, 'Immigrant Area')
-    #     self.info_setup(self.table_info_action, 'Dash')
-    #     self.info_setup(self.table_info_regi, 'Jisu Choi\nUnknown')
-
 if __name__ == "__main__" :
     app = QApplication(sys.argv)
 
@@ -135,25 +128,41 @@ if __name__ == "__main__" :
 #####################################################################################################
 # 6 frames list in order, json file with info
 # ex. [ ch_1_frame, ch_2_frame, ch_3_frame, ch_4_frame, person_1_frame, person_2_frame ]
-#     { action : Opposite,
+#     { action : Opposite, area : immigrant area, regi : Jisu Choi \n Unknown}
 
     file_path = './record.avi'
     video = cv2.VideoCapture(file_path)
     video.set(1, 500)
-
+    dic = {'action' : ['Dash', 'Opposite'], 'area' : 'immigrant area', 'regi' : ['Jisu Choi', 'Minho Chung']}
 
     def displayFrame():
         ret, frame = video.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = qimage2ndarray.array2qimage(frame)
-        myWindow.scene_setup(myWindow.view_ch1, image)
+
         myWindow.reset_cells()
+
+        ### Channel 1,2,3,4 person 1,2 setup ###
+        myWindow.scene_setup(myWindow.view_ch1, image)
+        myWindow.scene_setup(myWindow.view_ch2, image)
+        myWindow.scene_setup(myWindow.view_ch3, image)
+        myWindow.scene_setup(myWindow.view_ch4, image)
+        myWindow.scene_setup(myWindow.view_person1, image)
+        myWindow.scene_setup(myWindow.view_person2, image)
+
+        ### info setup ###
+        for action in dic['action']:
+            myWindow.action_setup(action, True)
+            myWindow.info_setup(myWindow.table_info_action, action)
+
+        myWindow.info_setup(myWindow.table_info_area, dic['area'])
+
+        regi = '\n'.join(dic['regi'])
+        myWindow.info_setup(myWindow.table_info_regi, regi)
+
         time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        myWindow.action_setup('Opposite', myWindow.table_action_check1, True)
         myWindow.info_setup(myWindow.table_info_time, time)
-        myWindow.info_setup(myWindow.table_info_area, 'Immigrant Area')
-        myWindow.info_setup(myWindow.table_info_action, 'Dash')
-        myWindow.info_setup(myWindow.table_info_regi, 'Jisu Choi\nUnknown')
+
 
 #####################################################################################################
 

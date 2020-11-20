@@ -12,5 +12,6 @@ record.avi
 
 
 python3 airport_control_system_ui.py
-
+EXAMPLE
 <img src="two_sample.png"></img>
+<img src="abandon_sample.png"></img>

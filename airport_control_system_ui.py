@@ -1,14 +1,16 @@
+import json
 import sys
+
+import numpy
+from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QGraphicsView
-from PyQt5 import uic
-from PyQt5 import QtGui
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from datetime import datetime
-import mmcv, cv2, qimage2ndarray
-from PIL import Image, ImageQt
+from receiver import Client
+import cv2, qimage2ndarray
 
+MEGA_BYTE = 1024 * 1024
 form_class = uic.loadUiType("airport_control_system_v5.ui")[0]
 
 class WindowClass(QMainWindow, form_class) :
@@ -92,7 +94,6 @@ class WindowClass(QMainWindow, form_class) :
         self.action_setup('Abandon', False)
         self.action_setup('Assault', False)
 
-
         self.table_info_time.setItem(0, 1, QTableWidgetItem())
         self.table_info_area.setItem(0, 1, QTableWidgetItem())
         self.table_info_action.setItem(0, 1, QTableWidgetItem())
@@ -120,64 +121,42 @@ class WindowClass(QMainWindow, form_class) :
         view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-if __name__ == "__main__" :
-    app = QApplication(sys.argv)
 
+if __name__ == "__main__" :
+    client = Client()
+    app = QApplication(sys.argv)
     myWindow = WindowClass()
 
-#####################################################################################################
-# 6 frames list in order, json file with info
-# ex. [ ch_1_frame, ch_2_frame, ch_3_frame, ch_4_frame, person_1_frame, person_2_frame ]
-#     { action : Opposite, area : immigrant area, regi : Jisu Choi \n Unknown}
-
-    file_path = './record.avi'
-    myWindow.video = cv2.VideoCapture(file_path)
-    myWindow.video.set(1, 500)
-    dic = {'action' : ['Dash', 'Opposite'], 'area' : 'immigrant area', 'regi' : ['Jisu Choi', 'Minho Chung']}
-
     def displayFrame():
-
-        ret, frame = myWindow.video.read()
-        if ret == False:
-            myWindow.video = cv2.VideoCapture(file_path)
-            myWindow.video.set(1, 500)
-            ret, frame = myWindow.video.read()
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        image = qimage2ndarray.array2qimage(frame)
+        frames, meta = client.recv()
+        images = []
+        for frame in frames:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            image = qimage2ndarray.array2qimage(frame)
+            images.append(image)
 
         myWindow.reset_cells()
 
-        ### Channel 1,2,3,4 person 1,2 setup ###
-        myWindow.scene_setup(myWindow.view_ch1, image)
-        myWindow.scene_setup(myWindow.view_ch2, image)
-        myWindow.scene_setup(myWindow.view_ch3, image)
-        myWindow.scene_setup(myWindow.view_ch4, image)
-        myWindow.scene_setup(myWindow.view_person1, image)
-        myWindow.scene_setup(myWindow.view_person2, image)
+        # Channel 1,2,3,4 person 1,2 setup
+        myWindow.scene_setup(myWindow.view_ch1, images[0])
+        myWindow.scene_setup(myWindow.view_ch2, images[1])
+        myWindow.scene_setup(myWindow.view_ch3, images[2])
+        myWindow.scene_setup(myWindow.view_ch4, images[3])
+        myWindow.scene_setup(myWindow.view_person1, images[0])
+        myWindow.scene_setup(myWindow.view_person2, images[0])
 
-        ### info setup ###
-        for action in dic['action']:
+        # info setup
+        for action in meta['action']:
             myWindow.action_setup(action, True)
             myWindow.info_setup(myWindow.table_info_action, action)
 
-        myWindow.info_setup(myWindow.table_info_area, dic['area'])
-
-        regi = '\n'.join(dic['regi'])
+        myWindow.info_setup(myWindow.table_info_area, meta['area'])
+        regi = '\n'.join(meta['regi'])
         myWindow.info_setup(myWindow.table_info_regi, regi)
-
-        time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        myWindow.info_setup(myWindow.table_info_time, time)
-
-
-
-
-#####################################################################################################
+        myWindow.info_setup(myWindow.table_info_time, meta['time'])
 
     timer = QTimer()
     timer.timeout.connect(displayFrame)
     timer.start(30)
-
-
     myWindow.showFullScreen()
-
     app.exec_()

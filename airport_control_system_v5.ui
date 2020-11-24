@@ -194,7 +194,7 @@ border-radius: 10px;</string>
                 <string notr="true">color: rgb(252, 233, 79);</string>
                </property>
                <property name="text">
-                <string>MINDs Lab AirPort Control System</string>
+                <string>MINDs Lab Air port Surveillance system</string>
                </property>
                <property name="textFormat">
                 <enum>Qt::AutoText</enum>

@@ -11,6 +11,7 @@ class Client:
     def __init__(self):
         self.redisDB = redis.Redis(host='localhost', port=6379, db=0)
         self.sharedFrames = []
+        self._cachedShmTime = []
         self._shms = []
         self._createSharedMemory()
 
@@ -24,7 +25,6 @@ class Client:
                 self.sharedFrames.append(shmFrame)
                 self._shms.append(shm)
 
-
     def recv(self):
         metaInfo = self.redisDB.hget("var", "result")
         if metaInfo is not None:
@@ -33,4 +33,13 @@ class Client:
             except json.JSONDecodeError as e:
                 metaInfo = None
         frames = [frame.copy() for frame in self.sharedFrames]
+
+        faceImg = self.redisDB.hget("var", "face")
+        objImg = self.redisDB.hget("var", "object")
+        faceImg = numpy.zeros((360, 360, 3), dtype=numpy.uint8) if faceImg is None \
+                              else numpy.reshape(numpy.frombuffer(faceImg, dtype=numpy.uint8), (360, 360, 3))
+        objImg = numpy.zeros((360, 360, 3), dtype=numpy.uint8) if objImg is None \
+            else numpy.reshape(numpy.frombuffer(objImg, dtype=numpy.uint8), (360, 360, 3))
+        frames.append(faceImg)
+        frames.append(objImg)
         return frames, metaInfo

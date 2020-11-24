@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from receiver import Client
+import numpy
 import cv2, qimage2ndarray
 
 MEGA_BYTE = 1024 * 1024
@@ -142,15 +143,15 @@ if __name__ == "__main__" :
         myWindow.scene_setup(myWindow.view_ch2, images[1])
         myWindow.scene_setup(myWindow.view_ch3, images[2])
         myWindow.scene_setup(myWindow.view_ch4, images[3])
-        myWindow.scene_setup(myWindow.view_person1, images[0])
-        myWindow.scene_setup(myWindow.view_person2, images[0])
+        myWindow.scene_setup(myWindow.view_person1, images[4])
+        myWindow.scene_setup(myWindow.view_person2, images[5])
 
         # info setup
         for action in meta['action']:
             myWindow.action_setup(action, True)
             myWindow.info_setup(myWindow.table_info_action, action)
 
-        myWindow.info_setup(myWindow.table_info_area, meta['area'])
+        myWindow.info_setup(myWindow.table_info_area, meta['area'][0])
         regi = '\n'.join(meta['regi'])
         myWindow.info_setup(myWindow.table_info_regi, regi)
         myWindow.info_setup(myWindow.table_info_time, meta['time'])

@@ -80,7 +80,7 @@ class WindowClass(QMainWindow, form_class) :
     # information setup
     # Input : category(ex. self.table_info_time)
     #        info(ex. '2020-11-06 14:08:20')
-    def info_setup(self, category, info):
+    def  info_setup(self, category, info):
         info_font = QFont('Noto Sans CJK KR', 10, QFont.Bold)
         item = self.cell_setup(info_font, True)
         item.setText(info)
@@ -148,7 +148,15 @@ if __name__ == "__main__" :
 
         # info setup
         for action in meta['action']:
-            myWindow.action_setup(action, True)
+            if action in ("Opposite, Two, Dash"):
+                myWindow.action_setup(action, True)
+            else:
+                myWindow.action_setup('Dash', False)
+                myWindow.action_setup('Opposite', False)
+                myWindow.action_setup('Faint', False)
+                myWindow.action_setup('Two', False)
+                myWindow.action_setup('Abandon', False)
+                myWindow.action_setup('Assault', False)
             myWindow.info_setup(myWindow.table_info_action, action)
 
         myWindow.info_setup(myWindow.table_info_area, meta['area'][0])

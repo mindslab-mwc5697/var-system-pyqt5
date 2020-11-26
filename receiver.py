@@ -13,6 +13,9 @@ class Client:
         self.sharedFrames = []
         self._cachedShmTime = []
         self._shms = []
+        self.redisDB.hdel("var", "face")
+        self.redisDB.hdel("var", "object")
+        self.redisDB.hdel("var", "result")
         self._createSharedMemory()
 
     def _createSharedMemory(self):
@@ -25,6 +28,16 @@ class Client:
                 self.sharedFrames.append(shmFrame)
                 self._shms.append(shm)
 
+    def _update(self):
+        for i in range(4):
+            if os.path.exists(f"/dev/shm/channel_{i}"):
+                shm = shared_memory.SharedMemory(size=numpy.prod((360, 640, 3))
+                                                      * numpy.dtype(numpy.uint8).itemsize,
+                                                 name=f"channel_{i}")
+                shmFrame = numpy.ndarray((360, 640, 3), dtype=numpy.uint8, buffer=shm.buf)
+                self.sharedFrames[i] = shmFrame
+                self._shms[i] = shm
+
     def recv(self):
         metaInfo = self.redisDB.hget("var", "result")
         if metaInfo is not None:
@@ -32,6 +45,15 @@ class Client:
                 metaInfo = json.loads(metaInfo)
             except json.JSONDecodeError as e:
                 metaInfo = None
+        else:
+            metaInfo = {
+                "action": [""],
+                "area": [""],
+                "regi": [""],
+                "time": "",
+            }
+
+        self._update()
         frames = [frame.copy() for frame in self.sharedFrames]
 
         faceImg = self.redisDB.hget("var", "face")
